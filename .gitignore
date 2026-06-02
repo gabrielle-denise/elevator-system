@@ -1,0 +1,14 @@
+# Coq build artifacts
+*.vo
+*.vok
+*.vos
+*.vos.d
+*.glob
+*.aux
+*.d
+.coqdeps.d
+
+# Typst output
+*.pdf
+!project_guidelines.pdf
+!topic_proposal.pdf

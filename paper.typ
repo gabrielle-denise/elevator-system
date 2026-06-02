@@ -1,49 +1,104 @@
-#import "@preview/charged-ieee:0.1.3": ieee
+// ── Page & text ──────────────────────────────────────────────────────────────
+#set page(paper: "us-letter", margin: (x: 1.25in, top: 1in, bottom: 1in), numbering: "1")
+#set text(font: "Libertinus Serif", size: 11pt)
+#set par(justify: true, leading: 0.65em, spacing: 1.3em)
 
-#show: ieee.with(
-  title: [Formal Verification of Elevator Control System Safety Properties in Rocq],
-  abstract: [
-    Elevator systems are safety-critical infrastructure found in virtually every modern building,
-    where incorrect controller behavior can cause serious injury or fatality. Common failure modes
-    include elevator motion while doors are open, movement when already at the destination floor,
-    and undefined system states arising from incomplete or ambiguous control logic. In this paper,
-    we present a mechanically verified formal model of a simplified elevator controller modeled as a
-    deterministic finite state machine with five floors. We encode the model in Rocq (Coq), an
-    interactive theorem prover based on the Calculus of Inductive Constructions, and formally prove
-    six key properties: Door Safety, Movement Safety, State Consistency, Determinism, Totality,
-    and Reachability. Safety properties are established via case analysis on the transition function;
-    State Consistency is proven as an inductive invariant preserved by every transition; and
-    Reachability is proven by structural induction, showing that every state reachable from the
-    initial configuration satisfies the invariant. Our results demonstrate that interactive theorem
-    proving is a practical and rigorous approach to establishing strong correctness guarantees for
-    safety-critical embedded controllers.
-  ],
-  authors: (
-    (
-      name: "Aaron Jori B. Baclor",
-      department: [Department of Computer Science],
-      organization: [University of the Philippines Diliman],
-      location: [Quezon City, Philippines],
-      email: "abbaclor1@up.edu.ph",
-    ),
-    (
-      name: "Raphael Anton G. Felix",
-      department: [Department of Computer Science],
-      organization: [University of the Philippines Diliman],
-      location: [Quezon City, Philippines],
-      email: "rgfelix@up.edu.ph",
-    ),
-    (
-      name: "Gabrielle Denise S. Sacramento",
-      department: [Department of Computer Science],
-      organization: [University of the Philippines Diliman],
-      location: [Quezon City, Philippines],
-      email: "gssacramento@up.edu.ph",
-    ),
-  ),
-  index-terms: ("formal verification", "theorem proving", "Rocq", "elevator safety", "finite state machine", "safety-critical systems"),
-  bibliography: bibliography("refs.bib"),
+// ── Heading numbering: "I." for level 1, "A." for level 2 ────────────────────
+#set heading(numbering: (..nums) => {
+  let n = nums.pos()
+  if n.len() == 1 { numbering("I.", n.first()) }
+  else if n.len() == 2 { numbering("A.", n.last()) }
+  else { none }
+})
+
+#show heading.where(level: 1): it => {
+  v(1.6em, weak: true)
+  block(text(size: 12pt, weight: "bold", it))
+  v(0.5em, weak: true)
+}
+
+#show heading.where(level: 2): it => {
+  v(1.0em, weak: true)
+  block(text(size: 11pt, weight: "bold", style: "italic", it))
+  v(0.3em, weak: true)
+}
+
+// ── Code block boxes ─────────────────────────────────────────────────────────
+#show raw.where(block: true): it => block(
+  fill: luma(245),
+  stroke: (left: 2.5pt + luma(155)),
+  inset: (x: 12pt, y: 9pt),
+  radius: 3pt,
+  width: 100%,
+  it,
 )
+
+// ── Title block ───────────────────────────────────────────────────────────────
+#v(1em)
+#align(center, text(size: 17pt, weight: "bold")[
+  Formal Verification of Elevator Control System\ Safety Properties in Rocq
+])
+#v(1.2em)
+
+#grid(
+  columns: (1fr, 1fr, 1fr),
+  gutter: 0.8em,
+  align(center)[
+    #text(weight: "bold")[Aaron Jori B. Baclor] \
+    #text(size: 9.5pt)[
+      Dept. of Computer Science \
+      University of the Philippines Diliman \
+      Quezon City, Philippines \
+      abbaclor1\@up.edu.ph
+    ]
+  ],
+  align(center)[
+    #text(weight: "bold")[Raphael Anton G. Felix] \
+    #text(size: 9.5pt)[
+      Dept. of Computer Science \
+      University of the Philippines Diliman \
+      Quezon City, Philippines \
+      rgfelix\@up.edu.ph
+    ]
+  ],
+  align(center)[
+    #text(weight: "bold")[Gabrielle Denise S. Sacramento] \
+    #text(size: 9.5pt)[
+      Dept. of Computer Science \
+      University of the Philippines Diliman \
+      Quezon City, Philippines \
+      gssacramento\@up.edu.ph
+    ]
+  ],
+)
+#v(1.8em)
+
+// ── Abstract ──────────────────────────────────────────────────────────────────
+#block(inset: (x: 0.4in), width: 100%)[
+  #align(center)[*Abstract*]
+  #v(0.4em)
+  Elevator systems are safety-critical infrastructure found in virtually every modern building,
+  where incorrect controller behavior can cause serious injury or fatality. Common failure modes
+  include elevator motion while doors are open, movement when already at the destination floor,
+  and undefined system states arising from incomplete or ambiguous control logic. In this paper,
+  we present a mechanically verified formal model of a simplified elevator controller modeled as a
+  deterministic finite state machine with five floors. We encode the model in Rocq (Coq), an
+  interactive theorem prover based on the Calculus of Inductive Constructions, and formally prove
+  six key properties: Door Safety, Movement Safety, State Consistency, Determinism, Totality,
+  and Reachability. Safety properties are established via case analysis on the transition function;
+  State Consistency is proven as an inductive invariant preserved by every transition; and
+  Reachability is proven by structural induction, showing that every state reachable from the
+  initial configuration satisfies the invariant. Our results demonstrate that interactive theorem
+  proving is a practical and rigorous approach to establishing strong correctness guarantees for
+  safety-critical embedded controllers.
+
+  #v(0.5em)
+  *Index Terms* — formal verification, theorem proving, Rocq, elevator safety, finite state
+  machine, safety-critical systems
+]
+#v(1em)
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 = Introduction
 
@@ -120,7 +175,7 @@ transition function maps a state and a command to a successor state.
 ```coq
 Inductive Floor : Type := F0 | F1 | F2 | F3 | F4.
 
-Inductive DoorStatus    : Type := DoorOpen | DoorClosed.
+Inductive DoorStatus     : Type := DoorOpen | DoorClosed.
 Inductive MovementStatus : Type := Moving | Idle.
 Inductive Direction      : Type := DirUp | DirDown | DirNone.
 
@@ -144,10 +199,10 @@ are orthogonal; the invariant then rules out combinations such as `Moving` with 
 
 ```coq
 Inductive Command : Type :=
-| CallElevator       : Floor -> Command
-| OpenDoor           : Command
-| CloseDoor          : Command
-| MoveElevator       : Command
+| CallElevator        : Floor -> Command
+| OpenDoor            : Command
+| CloseDoor           : Command
+| MoveElevator        : Command
 | ArriveAtDestination : Command.
 ```
 
@@ -182,8 +237,8 @@ Definition transition (s : State) (cmd : Command) : State :=
       end
   | MoveElevator =>
       match movement_status s with
-      | Moving  => s
-      | Idle    =>
+      | Moving => s
+      | Idle   =>
           match door_status s with
           | DoorOpen   => s
           | DoorClosed =>
@@ -388,16 +443,16 @@ the primary proof technique, and the approximate complexity of the proof.
 
 #figure(
   table(
-    columns: (auto, auto, auto),
-    inset: 6pt,
+    columns: (auto, 1fr, auto),
+    inset: 7pt,
     align: (left, left, center),
     table.header([*Property*], [*Proof Technique*], [*Approx. Lines*]),
-    [Door Safety],       [Invariant + `invariant_moving_closed`; `eapply`],   [~25],
-    [Movement Safety],   [Case analysis on `m`, `d`; `Nat.ltb_irrefl`; `lia`],[~35],
-    [State Consistency], [Helper lemmas; `destruct cmd`; `apply invariant_*`],[~90],
-    [Determinism],       [`inversion`; `reflexivity`],                         [~10],
-    [Totality],          [Existential witness; `constructor`],                 [~6],
-    [Reachability],      [Structural induction on `reachable`; `eapply`],     [~50],
+    [Door Safety],       [Invariant + `invariant_moving_closed`; `eapply`],    [~25],
+    [Movement Safety],   [Case split on `m`, `d`; `Nat.ltb_irrefl`; `lia`],   [~35],
+    [State Consistency], [Helper lemmas; `destruct cmd`; `apply invariant_*`], [~90],
+    [Determinism],       [`inversion`; `reflexivity`],                          [~10],
+    [Totality],          [Existential witness; `constructor`],                  [~6],
+    [Reachability],      [Structural induction on `reachable`; `eapply`],      [~50],
   ),
   caption: [Summary of verified properties.],
 ) <tbl-results>
@@ -427,16 +482,16 @@ definitional alias proven by `apply door_safety`.
 
 The Movement Safety proof proceeds by case analysis on the `movement_status` and `door_status`
 of the current state. If the elevator is already `Moving`, the `MoveElevator` transition
-stutters (returns `s`), and the `state_invariant` hypothesis on `s` provides `direction_matches_movement`.
-When `direction s = DirUp` or `DirDown`, the invariant conjunct yields a strict inequality
-between `current_floor` and `requested_floor`, but `current_floor s = requested_floor s`
-gives equality — `lia` derives a contradiction. The `DirNone` case is excluded by the
-invariant since `Moving` with `DirNone` is `False`.
+stutters (returns `s`), and the `state_invariant` hypothesis on `s` provides
+`direction_matches_movement`. When `direction s = DirUp` or `DirDown`, the invariant conjunct
+yields a strict inequality between `current_floor` and `requested_floor`, but
+`current_floor s = requested_floor s` gives equality — `lia` derives a contradiction. The
+`DirNone` case is excluded by the invariant since `Moving` with `DirNone` is `False`.
 
 If the elevator is `Idle` and the door is `DoorOpen`, the transition stutters. If the door
-is `DoorClosed`, the `MoveElevator` case evaluates `floor_lt (current_floor s) (requested_floor s)`.
-Because `current_floor s = requested_floor s`, both `floor_lt` calls reduce to `false` via
-`Nat.ltb_irrefl`, so the transition constructs an `Idle` state directly.
+is `DoorClosed`, the `MoveElevator` case evaluates `floor_lt (current_floor s)
+(requested_floor s)`. Because `current_floor s = requested_floor s`, both `floor_lt` calls
+reduce to `false` via `Nat.ltb_irrefl`, so the transition constructs an `Idle` state directly.
 
 == State Consistency
 
@@ -560,3 +615,5 @@ as TLA+ or NuSMV to the same specification would allow a direct comparison of th
 verification paradigms on the same benchmark. Fourth, Rocq's program extraction facility
 could be used to derive a certified OCaml implementation of the controller from the verified
 specification, producing executable controller logic with machine-checked safety guarantees.
+
+#bibliography("refs.bib")
