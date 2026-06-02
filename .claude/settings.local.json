@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wsl -d Ubuntu -- bash -c \"coqc /home/vanil/elevator-system/elevator.v 2>&1\")"
+    ]
+  }
+}
