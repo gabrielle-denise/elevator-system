@@ -1,5 +1,5 @@
 // ── Page & text ──────────────────────────────────────────────────────────────
-#set page(paper: "us-letter", margin: (x: 1.25in, top: 1in, bottom: 1in), numbering: "1")
+#set page(paper: "a4", margin: (x: 1in, top: 1in, bottom: 1in), numbering: "1")
 #set text(font: "Libertinus Serif", size: 11pt)
 #set par(justify: true, leading: 0.65em, spacing: 1.3em)
 
@@ -44,29 +44,26 @@
   columns: (1fr, 1fr, 1fr),
   gutter: 0.8em,
   align(center)[
-    #text(weight: "bold")[Aaron Jori B. Baclor] \
-    #text(size: 9.5pt)[
+    #text(size: 10pt, weight: "bold")[Aaron Jori B. Baclor] \
+    #text(size: 9pt)[
       Dept. of Computer Science \
       University of the Philippines Diliman \
-      Quezon City, Philippines \
       abbaclor1\@up.edu.ph
     ]
   ],
   align(center)[
-    #text(weight: "bold")[Raphael Anton G. Felix] \
-    #text(size: 9.5pt)[
+    #text(size: 10pt, weight: "bold")[Raphael Anton G. Felix] \
+    #text(size: 9pt)[
       Dept. of Computer Science \
       University of the Philippines Diliman \
-      Quezon City, Philippines \
       rgfelix\@up.edu.ph
     ]
   ],
   align(center)[
-    #text(weight: "bold")[Gabrielle Denise S. Sacramento] \
-    #text(size: 9.5pt)[
+    #text(size: 10pt, weight: "bold")[Gabrielle Denise S. Sacramento] \
+    #text(size: 9pt)[
       Dept. of Computer Science \
       University of the Philippines Diliman \
-      Quezon City, Philippines \
       gssacramento\@up.edu.ph
     ]
   ],
