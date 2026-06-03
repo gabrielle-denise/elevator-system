@@ -1,0 +1,764 @@
+<!DOCTYPE html><html lang="en"><head>
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formal Verification of Elevator Control in Rocq</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* type scale @1920x1080 */
+    --type-title: 60px;
+    --type-subtitle: 38px;
+    --type-section: 30px;
+    --type-body: 30px;
+    --type-small: 25px;
+    --type-code: 25px;
+    --type-eyebrow: 24px;
+    /* spacing */
+    --pad-top: 68px;
+    --pad-bottom: 40px;
+    --pad-x: 92px;
+    --gap-title: 30px;
+    --gap-item: 20px;
+    /* palette */
+    --bg: #0c1220;
+    --bg-2: #111a2b;
+    --panel: #131e31;
+    --code-bg: rgba(52,210,195,.055);
+    --ink: #eef3f8;
+    --muted: #9aabc1;
+    --faint: #6b7d95;
+    --accent: #34d2c3;
+    --accent-2: #8aa2ff;
+    --warn: #f2b765;
+    --line: rgba(255,255,255,.10);
+    --line-soft: rgba(255,255,255,.06);
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; background:#05080f; }
+  deck-stage:not(:defined){ visibility:hidden; }
+  deck-stage{ background:#05080f; }
+
+  section{
+    background:
+      radial-gradient(1100px 700px at 82% -10%, rgba(52,210,195,.10), transparent 60%),
+      radial-gradient(900px 620px at 8% 112%, rgba(138,162,255,.10), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .slide{
+    height:100%; width:100%;
+    display:flex; flex-direction:column;
+    padding:var(--pad-top) var(--pad-x) var(--pad-bottom);
+  }
+
+  /* ---------- header ---------- */
+  .eyebrow{
+    display:flex; align-items:center; gap:16px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:var(--type-eyebrow);
+    letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent);
+    margin:0 0 14px;
+  }
+  .eyebrow .num{ color:var(--faint); }
+  .eyebrow .dot{ width:7px;height:7px;border-radius:50%;background:var(--accent); box-shadow:0 0 12px var(--accent); }
+  .eyebrow .sec{ color:var(--muted); letter-spacing:.14em; }
+
+  h1.title{
+    font-size:var(--type-title);
+    font-weight:600; line-height:1.04; margin:0;
+    letter-spacing:-.01em;
+    text-wrap:balance;
+  }
+  h2.title{
+    font-size:var(--type-subtitle);
+    font-weight:600; line-height:1.08; margin:0;
+    letter-spacing:-.01em;
+  }
+  .rule{ height:3px; width:104px; background:linear-gradient(90deg,var(--accent),transparent); margin:20px 0 0; border-radius:2px; }
+
+  .body{ flex:1; min-height:0; display:flex; flex-direction:column; justify-content:center; }
+
+  /* ---------- footer speaker note ---------- */
+  .note{
+    margin-top:auto;
+    display:flex; align-items:flex-start; gap:18px;
+    border-top:1px solid var(--line-soft);
+    padding-top:16px;
+  }
+  .note-tag{
+    flex:none;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:var(--type-small);
+    color:var(--accent);
+    letter-spacing:.04em;
+    display:flex; align-items:center; gap:9px;
+    padding-top:1px;
+  }
+  .note-tag::before{ content:""; width:7px;height:7px;border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); }
+  .note-text{ font-size:var(--type-small); color:var(--muted); line-height:1.38; margin:0; text-wrap:pretty; }
+
+  /* ---------- code / notation ---------- */
+  .code{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:var(--type-code);
+    background:var(--code-bg);
+    border:1px solid var(--line);
+    border-left:3px solid var(--accent);
+    border-radius:10px;
+    padding:20px 24px;
+    line-height:1.5;
+    white-space:pre;
+    overflow:hidden;
+    color:#dbe7f3;
+  }
+  .code .cond{ color:var(--accent); }
+  .code .cmt{ color:var(--faint); }
+  .code .kw{ color:var(--accent-2); }
+  .code-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:var(--type-small);
+    color:var(--ink); font-weight:500;
+    margin:0 0 12px;
+  }
+  .code-label .q{ color:var(--accent); }
+
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+  .accent{ color:var(--accent); }
+  .accent2{ color:var(--accent-2); }
+
+  /* ---------- generic bits ---------- */
+  ul.clean{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:var(--gap-item); }
+  ul.clean li{ font-size:var(--type-body); line-height:1.32; color:var(--ink); padding-left:30px; position:relative; text-wrap:pretty; }
+  ul.clean li::before{ content:""; position:absolute; left:4px; top:.62em; width:9px;height:9px; border-radius:2px; background:var(--accent); transform:rotate(45deg); }
+  ul.clean li.sub{ font-size:var(--type-small); color:var(--muted); padding-left:30px; }
+  ul.clean li.sub::before{ background:var(--faint); top:.6em; width:7px;height:7px; }
+  .lead{ font-size:var(--type-body); color:var(--muted); line-height:1.36; margin:0; }
+  .col-h{ font-size:var(--type-section); font-weight:600; margin:0 0 16px; letter-spacing:-.01em; }
+  .col-h .idx{ font-family:'IBM Plex Mono',monospace; color:var(--accent); margin-right:12px; font-size:.82em; }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:46px; align-items:start; }
+  .grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:40px; align-items:start; }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:26px 28px;
+  }
+  .card.tint{ background:linear-gradient(180deg, rgba(52,210,195,.06), rgba(52,210,195,0)); }
+
+  /* ---------- tables ---------- */
+  table{ border-collapse:collapse; width:100%; font-size:var(--type-small); }
+  table th{
+    text-align:left; font-family:'IBM Plex Mono',monospace; font-weight:500;
+    color:var(--accent); text-transform:uppercase; letter-spacing:.08em;
+    font-size:24px; padding:12px 18px; border-bottom:1px solid var(--line);
+  }
+  table td{ padding:13px 18px; color:var(--ink); line-height:1.3; vertical-align:top; }
+  table tbody tr:nth-child(odd){ background:rgba(255,255,255,.025); }
+  table td .m{ font-family:'IBM Plex Mono',monospace; color:var(--accent2); }
+  table td .num{ font-family:'IBM Plex Mono',monospace; color:var(--accent); font-weight:600; }
+
+  .pill{ display:inline-flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:24px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:7px 16px; }
+
+  /* entrance animation */
+  @media (prefers-reduced-motion: no-preference){
+    [data-deck-active] .slide > header{ animation:rise .5s cubic-bezier(.2,.7,.3,1) both; }
+    [data-deck-active] .slide > .body{ animation:rise .6s .07s cubic-bezier(.2,.7,.3,1) both; }
+  }
+  @keyframes rise{ from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:none; } }
+
+  /* ===== title slide ===== */
+  .title-slide{ justify-content:center; gap:0; }
+  .title-badge{
+    display:inline-flex; align-items:center; gap:14px; align-self:flex-start;
+    font-family:'IBM Plex Mono',monospace; font-size:var(--type-small);
+    letter-spacing:.1em; color:var(--accent);
+    border:1px solid var(--line); border-radius:999px; padding:10px 20px;
+    background:rgba(52,210,195,.05);
+  }
+  .title-slide h1{
+    font-size:78px; font-weight:600; line-height:1.05; letter-spacing:-.015em;
+    margin:38px 0 0; max-width:1500px; text-wrap:balance;
+  }
+  .title-slide h1 em{ font-style:normal; color:var(--accent); }
+  .authors{ font-size:var(--type-subtitle); font-weight:400; color:var(--ink); margin:40px 0 0; }
+  .inst{ font-size:var(--type-body); color:var(--muted); margin:12px 0 0; }
+  .tagline{
+    display:flex; align-items:center; gap:16px;
+    font-size:var(--type-small); color:var(--accent); margin:40px 0 0;
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .tagline .bar{ width:46px;height:2px;background:var(--accent); }
+
+  /* state diagram */
+  .diagram-wrap{ display:flex; align-items:center; justify-content:center; height:100%; }
+  .diagram-wrap svg{ width:100%; height:auto; max-height:520px; }
+  .st-label{ font-family:'IBM Plex Sans',sans-serif; font-weight:600; }
+  .ed-label{ font-family:'IBM Plex Mono',monospace; }
+
+  /* timeline */
+  .timeline{ display:flex; width:100%; border-radius:12px; overflow:hidden; border:1px solid var(--line); }
+  .seg{ padding:22px 22px; display:flex; flex-direction:column; gap:8px; border-right:1px solid rgba(0,0,0,.3); position:relative; }
+  .seg:last-child{ border-right:none; }
+  .seg .seg-time{ font-family:'IBM Plex Mono',monospace; font-size:30px; font-weight:600; color:#06121a; }
+  .seg .seg-name{ font-size:21px; font-weight:600; color:#0a1a22; line-height:1.2; }
+  .seg .seg-slides{ font-family:'IBM Plex Mono',monospace; font-size:18px; color:rgba(6,18,26,.62); }
+  .axis{ display:flex; justify-content:space-between; margin-top:14px; font-family:'IBM Plex Mono',monospace; font-size:20px; color:var(--faint); }
+</style>
+</head>
+<body style="">
+
+<deck-stage width="1920" height="1080" style="--deck-rail-w: 188px;">
+
+  <!-- ===================== SLIDE 1 — TITLE ===================== -->
+  <section data-label="Title">
+    <div class="slide title-slide">
+      <span class="title-badge" style="">Rocq · CS 171 Final Project</span>
+      <h1 style="">Formal Verification of an <em>Elevator Control System</em> Safety Properties in Rocq</h1>
+      <p class="authors" style="">Aaron Jori B. Baclor | Raphael Anton G. Felix | Gabrielle Denise S. Sacramento</p>
+      <p class="inst" style=""><br></p>
+      <div class="tagline"><span class="bar" style="opacity: 0;"></span><span style=""><br></span></div>
+    </div>
+  </section>
+
+  <!-- ===================== SLIDE 2 — MOTIVATION ===================== -->
+  <section data-label="Motivation">
+    <div class="slide">
+      <header>
+        <div class="eyebrow"><span class="dot"></span><span class="num">02 / 11</span><span class="sec">Motivation</span></div>
+        <h2 class="title" style="">Why an elevator is worth proving</h2>
+        <div class="rule"></div>
+      </header>
+      <div class="body">
+        <div class="grid3">
+          <div>
+            <h3 class="col-h"><span class="idx">01</span>Safety-critical</h3>
+            <ul class="clean">
+              <li>Moves while the door is open → entrapment or injury</li>
+              <li>Motion starts when already at the target → spurious travel</li>
+              <li>Undefined states from incomplete logic → unpredictable behavior</li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="col-h"><span class="idx">02</span>Testing falls short</h3>
+            <ul class="clean">
+              <li>Simulation explores only a <span class="accent">finite subset</span> of behaviors</li>
+              <li>Cannot rule out edge cases by construction</li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="col-h"><span class="idx">03</span>Proof, not testing</h3>
+            <ul class="clean">
+              <li>A mathematical proof valid for <span class="accent">all</span> inputs and states</li>
+              <li>Rocq checks every step against the axioms of type theory</li>
+              <li class="sub">Prior work — SPIN, TLA+, B-Method — is bounded; theorem proving is not</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SLIDE 3 — SYSTEM MODEL ===================== -->
+  <section data-label="System Model">
+    <div class="slide">
+      <header>
+        <div class="eyebrow"><span class="dot"></span><span class="num">03 / 11</span><span class="sec">System Model</span></div>
+        <h2 class="title" style="">Deterministic Finite State Machine</h2>
+        <div class="rule"></div>
+      </header>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <p class="code-label">State record &nbsp;<span class="q">(f_cur, d, m, dir, f_req)</span></p>
+            <table>
+              <thead><tr><th>Field</th><th>Type</th><th>Meaning</th></tr></thead>
+              <tbody>
+                <tr><td class="m">current_floor</td><td>Floor</td><td>Current position</td></tr>
+                <tr><td class="m">door_status</td><td>Open · Closed</td><td>Door state</td></tr>
+                <tr><td class="m">movement_status</td><td>Moving · Idle</td><td>Motion state</td></tr>
+                <tr><td class="m">direction</td><td>Up · Down · None</td><td>Travel direction</td></tr>
+                <tr><td class="m">requested_floor</td><td>Floor</td><td>Pending target</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <p class="code-label">Five floors</p>
+            <div style="display:flex; gap:12px; margin-bottom:30px;">
+              <span class="pill">F0</span><span class="pill">F1</span><span class="pill">F2</span><span class="pill">F3</span><span class="pill">F4</span>
+            </div>
+            <p class="code-label">Five commands &nbsp;<span class="q">δ : State × Command → State</span></p>
+            <ul class="clean">
+              <li><span class="mono accent2">CallElevator f</span> — request floor f</li>
+              <li><span class="mono accent2">OpenDoor</span> / <span class="mono accent2">CloseDoor</span> — control door when stationary</li>
+              <li><span class="mono accent2">MoveElevator</span> — travel toward the request if safe</li>
+              <li><span class="mono accent2">ArriveAtDestination</span> — complete a journey atomically</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SLIDE 4 — TRANSITION FUNCTION ===================== -->
+  <section data-label="Transition Function">
+    <div class="slide">
+      <header>
+        <div class="eyebrow"><span class="dot"></span><span class="num">04 / 11</span><span class="sec">Transition Function</span></div>
+        <h2 class="title" style="">How the Controller Responds to Commands</h2>
+        <div class="rule"></div>
+      </header>
+      <div class="body">
+        <div class="grid2" style="grid-template-columns:1.18fr .82fr; gap:54px;">
+          <div style="display:flex; flex-direction:column; gap:22px;">
+            <div>
+              <p class="code-label">δ(s, <span class="accent2">MoveElevator</span>) — the central case</p>
+              <div class="code">δ(s, MoveElevator) =
+  s                                  <span class="cond">if m(s) = Moving</span>
+  s                                  <span class="cond">if d(s) = DoorOpen</span>
+  (f_cur, Closed, Moving, Up,   f_req)   <span class="cond">if f_cur &lt; f_req</span>
+  (f_cur, Closed, Moving, Down, f_req)   <span class="cond">if f_req &lt; f_cur</span>
+  (f_cur, Closed, Idle,   None, f_req)   <span class="cond">if f_cur = f_req</span></div>
+            </div>
+            <div>
+              <p class="code-label">δ(s, <span class="accent2">ArriveAtDestination</span>)</p>
+              <div class="code">  (f_req, Closed, Idle, None, f_req)   <span class="cond">if m(s) = Moving</span>
+  s                                  <span class="cond">if m(s) = Idle</span></div>
+            </div>
+            <p class="lead">Move while door open, open/close while moving, call while moving — all return <span class="mono accent">s</span> unchanged. Safety is enforced <span class="accent">structurally</span>, not by runtime assertions.</p>
+          </div>
+          <div class="diagram-wrap">
+            <svg viewBox="0 0 460 470" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <marker id="arr" markerWidth="11" markerHeight="11" refX="8" refY="4" orient="auto">
+                  <path d="M0,0 L9,4 L0,8 Z" fill="#34d2c3"></path>
+                </marker>
+                <marker id="arr2" markerWidth="11" markerHeight="11" refX="8" refY="4" orient="auto">
+                  <path d="M0,0 L9,4 L0,8 Z" fill="#8aa2ff"></path>
+                </marker>
+              </defs>
+              <!-- Idle node -->
+              <rect x="120" y="40" width="220" height="92" rx="16" fill="#131e31" stroke="#34d2c3" stroke-width="2"></rect>
+              <text x="230" y="80" text-anchor="middle" class="st-label" font-size="30" fill="#eef3f8">Idle</text>
+              <text x="230" y="110" text-anchor="middle" class="ed-label" font-size="17" fill="#9aabc1">dir = None</text>
+              <!-- Moving node -->
+              <rect x="120" y="338" width="220" height="92" rx="16" fill="#131e31" stroke="#8aa2ff" stroke-width="2"></rect>
+              <text x="230" y="378" text-anchor="middle" class="st-label" font-size="30" fill="#eef3f8">Moving</text>
+              <text x="230" y="408" text-anchor="middle" class="ed-label" font-size="17" fill="#9aabc1">door = Closed</text>
+              <!-- Idle -> Moving (left) -->
+              <path d="M150,132 C70,200 70,270 150,338" fill="none" stroke="#34d2c3" stroke-width="2.5" marker-end="url(#arr)"></path>
+              <text x="36" y="225" text-anchor="middle" class="ed-label" font-size="16" fill="#34d2c3" transform="rotate(-90 36 235)">MoveElevator</text>
+              <text x="58" y="252" text-anchor="middle" class="ed-label" font-size="13" fill="#6b7d95" transform="rotate(-90 58 252)">f_cur ≠ f_req</text>
+              <!-- Moving -> Idle (right) -->
+              <path d="M310,338 C390,270 390,200 310,132" fill="none" stroke="#8aa2ff" stroke-width="2.5" marker-end="url(#arr2)"></path>
+              <text x="424" y="235" text-anchor="middle" class="ed-label" font-size="16" fill="#8aa2ff" transform="rotate(90 424 235)">ArriveAtDestination</text>
+              <!-- Idle self loop -->
+              <path d="M340,62 C420,40 420,118 348,104" fill="none" stroke="#5e7088" stroke-width="2" marker-end="url(#arr)" opacity=".7"></path>
+              <text x="372" y="20" text-anchor="middle" class="ed-label" font-size="13" fill="#6b7d95">Open/Close · Call</text>
+              <!-- Moving self loop -->
+              <path d="M120,408 C40,430 40,352 112,366" fill="none" stroke="#5e7088" stroke-width="2" marker-end="url(#arr2)" opacity=".7"></path>
+              <text x="74" y="458" text-anchor="middle" class="ed-label" font-size="13" fill="#6b7d95">unsafe cmds stutter</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SLIDE 5 — INVARIANT ===================== -->
+  <section data-label="Invariant">
+    <div class="slide">
+      <header>
+        <div class="eyebrow"><span class="dot"></span><span class="num">05 / 11</span><span class="sec">Well-Formedness Invariant</span></div>
+        <h2 class="title" style="">3 Conditions Every Valid State Must Satisfy</h2>
+        <div class="rule"></div>
+      </header>
+      <div class="body">
+        <div class="grid3" style="gap:34px;">
+          <div>
+            <p class="code-label"><span class="accent">1</span> &nbsp;Floors in bounds</p>
+            <div class="code">f_cur(s) ∈ [0, 4]
+  ∧
+f_req(s) ∈ [0, 4]</div>
+          </div>
+          <div>
+            <p class="code-label"><span class="accent">2</span> &nbsp;Door interlock <span style="color:var(--faint)">· core</span></p>
+            <div class="code">m(s) = Moving
+  <span class="cond">⟹</span>
+d(s) = DoorClosed</div>
+          </div>
+          <div>
+            <p class="code-label"><span class="accent">3</span> &nbsp;Directional consistency</p>
+            <div class="code">Idle   ∧ dir = None
+  <span class="cmt">or</span>
+Moving ∧ Up   ∧ f_cur &lt; f_req
+  <span class="cmt">or</span>
+Moving ∧ Down ∧ f_req &lt; f_cur</div>
+          </div>
+        </div>
+        <div style="margin-top:36px; display:flex; align-items:center; gap:28px; flex-wrap:wrap;">
+          <span class="mono" style="font-size:var(--type-small); color:var(--muted);">Rules out impossible states →</span>
+          <span class="pill" style="color:var(--warn); border-color:rgba(242,183,101,.4);">Moving + DirNone</span>
+          <span class="pill" style="color:var(--warn); border-color:rgba(242,183,101,.4);">Moving + DoorOpen</span>
+          <span class="pill" style="color:var(--warn); border-color:rgba(242,183,101,.4);">Idle + DirUp / DirDown</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SLIDE 6 — PROPERTIES ===================== -->
+  <section data-label="Properties">
+    <div class="slide">
+      <header>
+        <div class="eyebrow"><span class="dot"></span><span class="num">06 / 11</span><span class="sec">Properties to Verify</span></div>
+        <h2 class="title" style=""><em style="">Six Safety and Correctness Properties Stated as Formal Theorems</em></h2>
+        <div class="rule"></div>
+      </header>
+      <div class="body">
+        <div class="grid2">
+          <div class="card">
+            <h3 class="col-h" style="margin-bottom:6px;"><span class="accent" style="font-family:'IBM Plex Mono';font-size:.8em;margin-right:12px;">SAFETY</span>physical correctness</h3>
+            <table>
+              <tbody>
+                <tr><td class="num">1</td><td><strong>Door Safety</strong><br><span style="color:var(--muted)">Never moves while the door is open</span></td></tr>
+                <tr><td class="num">2</td><td><strong>Movement Safety</strong><br><span style="color:var(--muted)">No motion when already at the target</span></td></tr>
+                <tr><td class="num">3</td><td><strong>State Consistency</strong><br><span style="color:var(--muted)">The invariant is preserved by every transition</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card">
+            <h3 class="col-h" style="margin-bottom:6px;"><span class="accent2" style="font-family:'IBM Plex Mono';font-size:.8em;margin-right:12px;">FUNCTIONAL</span>spec correctness</h3>
+            <table>
+              <tbody>
+                <tr><td class="num" style="color:var(--accent2)">4</td><td><strong>Determinism</strong><br><span style="color:var(--muted)">Same state + command → same successor</span></td></tr>
+                <tr><td class="num" style="color:var(--accent2)">5</td><td><strong>Totality</strong><br><span style="color:var(--muted)">Defined for every state–command pair</span></td></tr>
+                <tr><td class="num" style="color:var(--accent2)">6</td><td><strong>Reachability</strong><br><span style="color:var(--muted)">Every reachable state satisfies the invariant</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SLIDE 7 — ASSUMPTIONS & AXIOMS ===================== -->
+  <section data-label="Assumptions">
+    <div class="slide">
+      <header>
+        <div class="eyebrow"><span class="dot"></span><span class="num">07 / 11</span><span class="sec">Assumptions &amp; Axioms</span></div>
+        <h2 class="title">What we assume — and what we leave out</h2>
+        <div class="rule"></div>
+      </header>
+      <div class="body">
+        <div class="grid3">
+          <div>
+            <h3 class="col-h">Model assumptions</h3>
+            <ul class="clean">
+              <li><strong>Single pending request</strong> — one target, no queue</li>
+              <li><strong>Abstract motion</strong> — moves are atomic, no intermediate floors</li>
+              <li><strong>Command-driven</strong> — no assumption on command order</li>
+              <li><strong>No emergency stop</strong> — overrides not modeled</li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="col-h">Axioms used</h3>
+            <ul class="clean">
+              <li><span class="mono accent2">Nat.ltb_irrefl</span> — ¬(n &lt; n)</li>
+              <li><span class="mono accent2">Nat.ltb_lt</span> — ltb ⟺ &lt;</li>
+              <li><span class="mono accent2">lia</span> — closes arithmetic goals automatically</li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="col-h" style="color:var(--warn)">Not proven — by design</h3>
+            <ul class="clean">
+              <li><strong>Liveness</strong> — "eventually reaches any requested floor"</li>
+              <li class="sub">Requires fairness on the command stream</li>
+              <li class="sub">A hostile env could send OpenDoor forever</li>
+              <li class="sub">Would need temporal logic or coinductive traces</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SLIDE 8 — MAIN THEOREMS ===================== -->
+  <section data-label="Main Theorems">
+    <div class="slide">
+      <header>
+        <div class="eyebrow"><span class="dot"></span><span class="num">08 / 11</span><span class="sec">Main Theorems</span></div>
+        <h2 class="title" style="">Six Properties as Formally Stated Rocq Theorems</h2>
+        <div class="rule"></div>
+      </header>
+      <div class="body">
+        <div class="grid3" style="gap:28px; align-items:stretch;">
+          <div>
+            <p class="code-label"><span class="accent">T1</span> Door Safety</p>
+            <div class="code" style="font-size:22px; padding:16px 18px;">∀ s, c.  inv(s) ∧
+  δ(s,c).status = Moving
+  <span class="cond">⟹</span> δ(s,c).door = Closed</div>
+            <p class="code-label" style="margin-top:22px;"><span class="accent">T2</span> Movement Safety</p>
+            <div class="code" style="font-size:22px; padding:16px 18px;">∀ s.  inv(s) ∧
+  f_cur(s) = f_req(s)
+  <span class="cond">⟹</span> δ(s,Move).status ≠ Moving</div>
+          </div>
+          <div>
+            <p class="code-label"><span class="accent">T3</span> State Consistency</p>
+            <div class="code" style="font-size:22px; padding:16px 18px;">∀ s, c.
+  inv(s)
+  <span class="cond">⟹</span> inv(δ(s, c))</div>
+            <p class="code-label" style="margin-top:22px;"><span class="accent2">T4</span> Determinism</p>
+            <div class="code" style="font-size:22px; padding:16px 18px;">s —c→ s₁  ∧  s —c→ s₂
+  <span class="cond">⟹</span> s₁ = s₂</div>
+          </div>
+          <div>
+            <p class="code-label"><span class="accent2">T5</span> Totality</p>
+            <div class="code" style="font-size:22px; padding:16px 18px;">∀ s, c.
+  <span class="cond">∃</span> s'.  s —c→ s'</div>
+            <p class="code-label" style="margin-top:22px;"><span class="accent">T6</span> Reachability + corollaries</p>
+            <div class="code" style="font-size:22px; padding:16px 18px;">∀ s. reachable(s) <span class="cond">⟹</span> inv(s)
+<span class="cmt">— so reachable + Moving:</span>
+  door = Closed
+  f_cur ≠ f_req</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SLIDE 9 — PROOF SKETCHES ===================== -->
+  <section data-label="Proof Sketches">
+    <div class="slide">
+      <header>
+        <div class="eyebrow"><span class="dot"></span><span class="num">09 / 11</span><span class="sec">Proof Sketches</span></div>
+        <h2 class="title" style="">Key Lemmas and Proof Strategies for Each Property</h2>
+        <div class="rule"></div>
+      </header>
+      <div class="body">
+        <div class="grid2" style="gap:30px;">
+          <div class="card" style="padding:22px 26px;">
+            <h3 class="col-h" style="font-size:26px; margin-bottom:12px;">Door Safety <span class="mono accent" style="font-size:20px;">~25 ln</span></h3>
+            <ul class="clean" style="gap:10px;">
+              <li class="sub">Helper lemma: <span class="mono">inv ∧ Moving ⟹ door = Closed</span></li>
+              <li class="sub">Apply T3 (preservation) to the successor</li>
+              <li class="sub">Apply the helper to that successor state</li>
+            </ul>
+          </div>
+          <div class="card" style="padding:22px 26px;">
+            <h3 class="col-h" style="font-size:26px; margin-bottom:12px;">Movement Safety <span class="mono accent" style="font-size:20px;">~35 ln</span></h3>
+            <ul class="clean" style="gap:10px;">
+              <li class="sub">Case split on movement &amp; door status</li>
+              <li class="sub">Already Moving: stutter + strict inequality contradicts <span class="mono">f_cur=f_req</span> via <span class="mono">lia</span></li>
+              <li class="sub">Idle+Closed: <span class="mono">ltb_irrefl</span> builds the Idle state directly</li>
+            </ul>
+          </div>
+          <div class="card" style="padding:22px 26px;">
+            <h3 class="col-h" style="font-size:26px; margin-bottom:12px;">State Consistency <span class="mono accent" style="font-size:20px;">~90 ln</span></h3>
+            <p class="lead" style="font-size:21px; margin-bottom:12px;">Three canonical shape lemmas:</p>
+            <div class="code" style="font-size:20px; padding:14px 16px;">inv_idle : ∀ f d r.  inv(f,d,Idle,None,r)
+inv_up   : f&lt;r ⟹ inv(f,Closed,Up,r)
+inv_down : r&lt;f ⟹ inv(f,Closed,Down,r)</div>
+          </div>
+          <div class="card" style="padding:22px 26px;">
+            <h3 class="col-h" style="font-size:26px; margin-bottom:12px;">Reachability <span class="mono accent" style="font-size:20px;">~50 ln</span></h3>
+            <ul class="clean" style="gap:10px;">
+              <li class="sub"><strong>Base:</strong> <span class="mono">initial = (F0,Closed,Idle,None,F0)</span> → <span class="mono">inv_idle</span></li>
+              <li class="sub"><strong>Step:</strong> IH gives <span class="mono">inv(s)</span>; T3 gives <span class="mono">inv(δ(s,c))</span></li>
+              <li class="sub">Structural induction on <span class="mono">reachable</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SLIDE 10 — RESULTS ===================== -->
+  <section data-label="Results">
+    <div class="slide">
+      <header>
+        <div class="eyebrow"><span class="dot"></span><span class="num">10 / 11</span><span class="sec">Results</span></div>
+        <h2 class="title" style="">All Six Properties Verified in ~660 Lines of Rocq</h2>
+        <div class="rule"></div>
+      </header>
+      <div class="body">
+        <div class="grid2" style="grid-template-columns:1.05fr .95fr; gap:50px;">
+          <div>
+            <table>
+              <thead><tr><th>Property</th><th>Primary technique</th><th style="text-align:right">Lines</th></tr></thead>
+              <tbody>
+                <tr><td>Door Safety</td><td class="m">invariant lemma + eapply</td><td class="num" style="text-align:right">~25</td></tr>
+                <tr><td>Movement Safety</td><td class="m">case split + lia</td><td class="num" style="text-align:right">~35</td></tr>
+                <tr><td>State Consistency</td><td class="m">shape lemmas + destruct</td><td class="num" style="text-align:right">~90</td></tr>
+                <tr><td>Determinism</td><td class="m">inversion + reflexivity</td><td class="num" style="text-align:right">~10</td></tr>
+                <tr><td>Totality</td><td class="m">witness + constructor</td><td class="num" style="text-align:right">~6</td></tr>
+                <tr><td>Reachability</td><td class="m">structural induction</td><td class="num" style="text-align:right">~50</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h3 class="col-h">Key design insights</h3>
+            <ul class="clean">
+              <li>Inductive <span class="mono accent2">Floor</span> type makes invalid floors <span class="accent">unrepresentable</span></li>
+              <li>Stuttering makes δ <span class="accent">total</span> and safety structural</li>
+              <li><span class="mono accent2">state_invariant</span> is both the spec <em>and</em> the induction hypothesis</li>
+            </ul>
+            <h3 class="col-h" style="margin-top:28px; color:var(--warn)">Scope limits — deliberate</h3>
+            <ul class="clean">
+              <li class="sub">No request queue, no continuous motion, no emergency stop</li>
+              <li class="sub">No liveness — a principled choice, not an oversight</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SLIDE 11 — CONCLUSION ===================== -->
+  <section data-label="Conclusion">
+    <div class="slide">
+      <header>
+        <div class="eyebrow"><span class="dot"></span><span class="num">11 / 11</span><span class="sec">Conclusion</span></div>
+        <h2 class="title" style="">What Was Proven, What Was Not, and Where to Go Next</h2>
+        <div class="rule"></div>
+      </header>
+      <div class="body">
+        <div class="grid3">
+          <div>
+            <h3 class="col-h">What we built</h3>
+            <ul class="clean">
+              <li>A formal Rocq model of a 5-floor elevator DFSM</li>
+              <li>Machine-checked proofs of 6 properties</li>
+              <li>Covers door interlock, no-op movement, directional consistency</li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="col-h">What it demonstrates</h3>
+            <ul class="clean">
+              <li>Theorem proving is <span class="accent">practical</span> for safety-critical controllers</li>
+              <li>Proofs are unconditional — not bounded by state space</li>
+              <li>The artifact extracts to certified OCaml code</li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="col-h">Future directions</h3>
+            <ul class="clean">
+              <li class="sub">Floor-request <span class="accent2">queue</span> with a scheduling policy</li>
+              <li class="sub">Liveness via TLA with fairness assumptions</li>
+              <li class="sub">Compare with model checking (TLA+, NuSMV)</li>
+              <li class="sub">Extract a certified OCaml controller</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== THANK YOU / QUESTIONS ===================== -->
+  <section data-label="Thank You">
+    <div class="slide" style="align-items:center; text-align:center; justify-content:center;">
+      <span class="title-badge" style="align-self: center;">Rocq · CS 171 Final Project</span>
+      <h1 class="title" style="font-size: 104px; margin: 42px 0px 0px;">Thank you!</h1>
+      <p style="font-size: 46px; color: var(--accent); margin: 30px 0px 0px; font-family: &quot;IBM Plex Mono&quot;, monospace; letter-spacing: 0.01em;">Any questions?</p>
+      <p class="inst" style="margin: 46px 0px 0px; font-size: var(--type-small);">Aaron Jori B. Baclor | Raphael Anton G. Felix | Gabrielle Denise S. Sacramento</p>
+      <p class="inst" style="margin: 10px 0px 0px; font-size: var(--type-small); color: var(--faint); opacity: 0;">Department of Computer Science · University of the Philippines Diliman</p>
+    </div>
+  </section>
+
+  <!-- ===================== APPENDIX ===================== -->
+  <section data-label="Appendix" data-deck-last-visible="">
+    <div class="slide">
+      <header>
+        <div class="eyebrow"><span class="dot"></span><span class="num">A</span><span class="sec">Appendix · Development &amp; Timing</span></div>
+        <h2 class="title">Rocq development checklist &amp; timing guide</h2>
+        <div class="rule"></div>
+      </header>
+      <div class="body" style="justify-content:flex-start; padding-top:8px;">
+        <div class="grid3" style="gap:40px;">
+          <div>
+            <h3 class="col-h" style="font-size:25px;">Definitions</h3>
+            <ul class="clean" style="gap:8px;">
+              <li class="sub mono">Floor · DoorStatus · MovementStatus · Direction · State · Command</li>
+              <li class="sub mono">floor_to_nat · floor_lt · max_floor</li>
+              <li class="sub mono">transition · state_invariant</li>
+              <li class="sub mono">initial_state · reachable</li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="col-h" style="font-size:25px;">Key lemmas</h3>
+            <ul class="clean" style="gap:8px;">
+              <li class="sub mono">floor_within_bounds</li>
+              <li class="sub mono">invariant_idle / _moving_up / _moving_down</li>
+              <li class="sub mono">invariant_moving_closed</li>
+              <li class="sub mono">initial_state_invariant</li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="col-h" style="font-size:25px;">Theorems <span style="color:var(--faint);font-size:.8em;">(dependency order)</span></h3>
+            <ul class="clean" style="gap:8px;">
+              <li class="sub mono">transition_preserves_invariant</li>
+              <li class="sub mono">door_safety · movement_safety</li>
+              <li class="sub mono">determinism · totality · unique_successor</li>
+              <li class="sub mono">reachable_states_satisfy_invariant</li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="code-label" style="margin:46px 0 16px;">Timing guide &nbsp;<span style="color:var(--faint)">· 10 minutes total</span></p>
+        <div class="timeline">
+          <div class="seg" style="flex:1.5; background:#34d2c3;">
+            <span class="seg-time">1.5m</span><span class="seg-name">Title + Motivation</span><span class="seg-slides">Slides 1–2</span>
+          </div>
+          <div class="seg" style="flex:2; background:#4cc7c9;">
+            <span class="seg-time">2.0m</span><span class="seg-name">System + Transition</span><span class="seg-slides">Slides 3–4</span>
+          </div>
+          <div class="seg" style="flex:2; background:#62b9d2;">
+            <span class="seg-time">2.0m</span><span class="seg-name">Invariant + Properties</span><span class="seg-slides">Slides 5–6</span>
+          </div>
+          <div class="seg" style="flex:0.5; background:#79abdb;">
+            <span class="seg-time">0.5m</span><span class="seg-name">Assumptions</span><span class="seg-slides">Slide 7</span>
+          </div>
+          <div class="seg" style="flex:2.5; background:#8aa2ff;">
+            <span class="seg-time">2.5m</span><span class="seg-name">Theorems + Proofs</span><span class="seg-slides">Slides 8–9</span>
+          </div>
+          <div class="seg" style="flex:1.5; background:#9d97f2;">
+            <span class="seg-time">1.5m</span><span class="seg-name">Results + Conclusion</span><span class="seg-slides">Slides 10–11</span>
+          </div>
+        </div>
+        <div class="axis"><span>0:00</span><span>5:00</span><span>10:00</span></div>
+      </div>
+    </div>
+  </section>
+
+</deck-stage>
+
+<script type="application/json" id="speaker-notes">
+[
+  "\"Hi everyone, we're presenting our paper on formal verification of an elevator controller in Rocq. What makes this different from a typical software project is that every safety claim we make has been mechanically verified by a theorem prover — not just tested or argued informally.\"\n\n",
+  "\"Elevators are safety-critical — they're in every building and carry people daily. Failures like moving with an open door or entering undefined states have caused real injuries worldwide. The standard response is testing and simulation, but testing only covers a finite subset of possible behaviors. Edge cases slip through. Formal verification takes a different approach: instead of running the system and looking for bugs, we construct a mathematical proof that holds for all possible inputs and all possible states. Rocq — formerly Coq — gives us a mechanical checker where every proof step is verified against the axioms of type theory. This is the same approach used to verify compilers and cryptographic protocols. We're applying it to an elevator controller.\"\n\n",
+  "\"We model the controller as a deterministic finite state machine with five floors. The complete configuration at any moment is captured by a state record with five fields: current floor, door status, movement status, direction, and requested floor. One key design decision: we use an inductive Floor type with five constructors instead of a plain integer. This means invalid floor values are unrepresentable by construction — no bounds check needed anywhere. The controller accepts five commands: CallElevator to request a floor, OpenDoor and CloseDoor for door control, MoveElevator to start travel, and ArriveAtDestination to complete a journey.\"\n\n",
+  "\"The transition function delta takes a state and a command and always returns a valid next state. The critical design choice is how it handles unsafe inputs — through stuttering. If you send MoveElevator while the door is open, the function returns the current state unchanged. Same if you try to open the door while moving. The system doesn't crash or enter a bad state — it just ignores the command. This means safety is baked into the structure of the function itself, not enforced by separate runtime checks. The MoveElevator case compares the current and requested floors. If they're equal, the elevator stays idle — no spurious motion. If the current floor is lower, it moves up. If higher, it moves down.\"\n\n",
+  "\"State_invariant is a predicate composed of three conjuncts every valid state must satisfy. First, floors in bounds — both floors must be in zero to four. Second, the door interlock — if the elevator is moving, the door must be closed. This directly encodes the core physical safety requirement. Third, directional consistency — the recorded direction must match the actual relative floor positions. Moving with DirUp means the requested floor is strictly above the current floor, and Moving with DirDown means strictly below. Idle always pairs with DirNone. This rules out nonsensical combinations like Moving with DirNone or Idle with DirUp. This invariant plays a dual role — it's both the safety specification and the induction hypothesis for our reachability proof.\"\n\n",
+  "\"We verify six properties in two categories. Safety properties with direct physical meaning: Door Safety — the elevator never moves with the door open. Movement Safety — no movement when already at the target floor. State Consistency — the invariant is preserved by every transition. Functional correctness properties about the specification itself: Determinism — same state and command always yield the same successor. Totality — the function is defined for every state-command pair. And finally Reachability — every state reachable from the initial configuration satisfies the invariant. That last one is the strongest result: it gives an unconditional global safety guarantee over all possible command sequences.\"\n\n",
+  "\"Our model makes four deliberate simplifications: single pending request — no queue; abstract motion — MoveElevator and ArriveAtDestination are atomic; command-driven — no constraints on what the environment sends; and no emergency stop. One property notably absent is liveness — the guarantee that the elevator eventually reaches any requested floor. This was intentional. Because our model is command-driven, a hostile environment could send OpenDoor forever and never send MoveElevator. Proving liveness requires explicit fairness assumptions about the command stream, which would require temporal logic or coinductive traces. We chose to stay within the current model and focus on safety, which is fully provable without fairness assumptions.\"\n\n",
+  "\"Here are the six theorems as formally stated in Rocq. Theorem 1: if a transition produces a moving state, that state has a closed door. Theorem 2: if current floor equals requested floor, MoveElevator produces an idle state. Theorem 3: the invariant is preserved by every transition. Theorem 4: the same state and command always yield the same successor. Theorem 5: for every state and command, a successor state exists. Theorem 6: every reachable state satisfies the invariant — from which we derive three corollaries giving global door safety, movement safety, and directional consistency.\"\n\n",
+  "\"Door Safety reduces to one helper lemma: any state satisfying the invariant that is Moving must have a closed door. We then apply State Consistency to get that the successor satisfies the invariant, and apply the lemma to it. Movement Safety works by case analysis. When the elevator is idle with a closed door, the transition evaluates floor_lt on equal floors. By Nat.ltb_irrefl, both comparisons return false, so the result is idle. State Consistency is the heaviest proof at around 90 lines. The key insight is three canonical shape lemmas — one for idle states, one for moving up, one for moving down. Once you have these, the main proof just destructs on the command and applies whichever shape matches. Reachability is structural induction on the reachable derivation. Base case: the initial state is idle, so inv_idle closes it immediately. Inductive step: apply State Consistency to the inductive hypothesis.\"\n\n",
+  "\"All six properties verified, around 660 lines total. State Consistency is the heaviest at 90 lines, Reachability at 50, and Determinism plus Totality together take only 16. The model has known limitations — single request, atomic motion, no emergency stop, no liveness — but all of these are deliberate. The model captures exactly the control-logic hazards that motivated the work: door interlock, no-op movement, and directional consistency. All six properties hold against this model without qualification.\"\n\n",
+  "\"To summarize: we built a formally verified Rocq model of a 5-floor elevator controller and machine-checked six properties covering safety, correctness, and reachability. The proofs are not just informal arguments — they are certificates accepted by the Rocq kernel. For future work: the most natural extension is a request queue, followed by liveness proofs using Coq's TLA library with explicit fairness assumptions. Comparing against TLA+ or NuSMV on the same spec would also be interesting. And Rocq's extraction facility could generate a certified OCaml controller directly from the verified model. Thank you — happy to take questions.\"\n\n",
+  "Appendix — use as a reference during Q&A. The timing bar is your pacing guide: keep Theorems + Proofs (slides 8–9) to 2.5 minutes, the densest part of the talk."
+]
+</script>
+
+<script src="deck-stage.js"></script>
+
+
+</body></html>
