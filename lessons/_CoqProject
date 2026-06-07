@@ -1,0 +1,13 @@
+-R . LF
+-R /mnt/c/Rocq-Platform~9.0~2025.08/lib/coq/user-contrib/Stdlib Stdlib
+Basics.v
+Induction.v
+Lists.v
+Poly.v
+Tactics.v
+Maps.v
+Logic.v
+IndProp.v
+Sort.v
+Imp.v
+Hoare.v

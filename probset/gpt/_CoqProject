@@ -1,0 +1,3 @@
+-R /home/vanil/elevator-system/lessons LF
+-R /c/Rocq-Platform~9.0~2025.08/lib/coq/user-contrib/Stdlib Stdlib
+ps1_answers.v

@@ -8,6 +8,19 @@
 *.d
 .coqdeps.d
 
+# Coq proof caches
+.lia.cache
+.nia.cache
+
+# Generated Makefile artifacts
+Makefile.conf
+
+# Archives
+*.zip
+
+# Windows NTFS metadata
+*:Zone.Identifier
+
 # Typst output
 *.pdf
 !project_guidelines.pdf
