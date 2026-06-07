@@ -35,10 +35,10 @@ elevator-system/
 │   ├── Makefile
 │   └── *.v
 ├── probset/               # Problem set files
-│   ├── ps1.v              # Problem set 1 template
-│   ├── ps2.v              # Problem set 2 template
-│   ├── ps1_filled.v       # Problem set 1 with answers
-│   ├── ps2_filled.v       # Problem set 2 with answers
+│   ├── ps1_template.v     # Problem set 1 template
+│   ├── ps2_template.v     # Problem set 2 template
+│   ├── ps1_answers.v      # Problem set 1 with answers
+│   ├── ps2_answers.v      # Problem set 2 with answers
 │   ├── gpt/               # Generated answer files
 │   │   ├── ps1_answers.v
 │   │   └── ps2_answers.v
@@ -77,8 +77,8 @@ in `lessons/`, compile from the repo root:
 
 ```sh
 # Using Rocq 9.0 coqc directly:
-coqc -R lessons LF probset/ps1_filled.v
-coqc -R lessons LF probset/ps2_filled.v
+coqc -R lessons LF probset/ps1_answers.v
+coqc -R lessons LF probset/ps2_answers.v
 
 # Or compile the answer files:
 coqc -R lessons LF probset/gpt/ps1_answers.v
@@ -92,8 +92,8 @@ with the `-coqlib` flag (since the WSL-installed Coq may be an older version):
 COQC="/mnt/c/Rocq-Platform~9.0~2025.08/bin/coqc.exe"
 COQLIB="C:/Rocq-Platform~9.0~2025.08/lib/coq"
 
-$COQC -coqlib "$COQLIB" -R lessons LF probset/ps1_filled.v
-$COQC -coqlib "$COQLIB" -R lessons LF probset/ps2_filled.v
+$COQC -coqlib "$COQLIB" -R lessons LF probset/ps1_answers.v
+$COQC -coqlib "$COQLIB" -R lessons LF probset/ps2_answers.v
 ```
 
 And for `lessons/`, create a wrapper script:
