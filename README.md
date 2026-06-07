@@ -20,24 +20,92 @@ are proven:
 5. **Totality** — the transition function is defined for every valid state-command pair
 6. **Reachability** — every state reachable from the initial configuration satisfies the invariant
 
-## Files
+## Repository Structure
 
-| File | Description |
-|------|-------------|
-| `elevator_FINAL.v` | Rocq source — complete model and all proofs |
-| `paper.typ` | Paper (Typst, single-column, Libertinus Serif) |
-| `refs.bib` | Bibliography |
-| `project_guidelines.pdf` | Course project guidelines |
-| `topic_proposal.pdf` | Original topic proposal |
+```
+elevator-system/
+├── elevator.v             # Rocq source — complete model and all proofs
+├── paper/                 # Paper and related documents
+│   ├── paper.typ          # Paper (Typst, single-column, Libertinus Serif)
+│   ├── refs.bib           # Bibliography
+│   ├── project_guidelines.pdf
+│   └── topic_proposal.pdf
+├── lessons/               # LF (Software Foundations) lesson files for Rocq 9.0
+│   ├── _CoqProject
+│   ├── Makefile
+│   └── *.v
+├── probset/               # Problem set files
+│   ├── ps1.v              # Problem set 1 template
+│   ├── ps2.v              # Problem set 2 template
+│   ├── ps1_filled.v       # Problem set 1 with answers
+│   ├── ps2_filled.v       # Problem set 2 with answers
+│   ├── gpt/               # Generated answer files
+│   │   ├── ps1_answers.v
+│   │   └── ps2_answers.v
+│   └── img/               # Reference images for problems
+└── presentation/          # Presentation slides and supporting files
+    ├── index.html
+    ├── presentation.md
+    ├── speaker-notes.md
+    ├── deck-stage.js
+    └── Elevator Rocq.html
+```
 
-## Compiling the Rocq file
+## Compiling the Rocq elevator proof
 
 ```sh
 coqc elevator_FINAL.v
 ```
 
-Requires Coq 8.18+ (or any recent Rocq release). The file depends only on the standard
+Requires Rocq 9.0+ (or Coq 8.18+). The file depends only on the standard
 library (`Arith.PeanoNat`, `Lia`).
+
+## Compiling the lessons (Rocq 9.0)
+
+The `lessons/` folder contains the LF (Logical Foundations) library needed to
+run the problem sets. You need **Rocq 9.0** installed.
+
+```sh
+cd lessons
+make
+```
+
+## Running the problem sets
+
+The problem sets import from the compiled `lessons/` library. After running `make`
+in `lessons/`, compile from the repo root:
+
+```sh
+# Using Rocq 9.0 coqc directly:
+coqc -R lessons LF probset/ps1_filled.v
+coqc -R lessons LF probset/ps2_filled.v
+
+# Or compile the answer files:
+coqc -R lessons LF probset/gpt/ps1_answers.v
+coqc -R lessons LF -R probset/gpt PS probset/gpt/ps2_answers.v
+```
+
+**On WSL with Rocq Platform 9.0 installed on Windows**, use the Windows binary
+with the `-coqlib` flag (since the WSL-installed Coq may be an older version):
+
+```sh
+COQC="/mnt/c/Rocq-Platform~9.0~2025.08/bin/coqc.exe"
+COQLIB="C:/Rocq-Platform~9.0~2025.08/lib/coq"
+
+$COQC -coqlib "$COQLIB" -R lessons LF probset/ps1_filled.v
+$COQC -coqlib "$COQLIB" -R lessons LF probset/ps2_filled.v
+```
+
+And for `lessons/`, create a wrapper script:
+
+```sh
+cat > /tmp/rocqc.sh << 'EOF'
+#!/bin/bash
+"/mnt/c/Rocq-Platform~9.0~2025.08/bin/coqc.exe" -coqlib "C:/Rocq-Platform~9.0~2025.08/lib/coq" "$@"
+EOF
+chmod +x /tmp/rocqc.sh
+cd lessons && COQC=/tmp/rocqc.sh make
+```
 
 ## Compiling the paper
 
