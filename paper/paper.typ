@@ -101,7 +101,7 @@
 
 Elevator systems are among the most widely deployed safety-critical embedded controllers in
 the built environment. A modern elevator responds to floor requests, manages door interlocks,
-and controls motor direction — all subject to strict safety requirements. Failures in these
+and controls motor direction, all subject to strict safety requirements. Failures in these
 systems are not merely inconvenient: incidents of elevators moving with doors open, doors
 closing on occupants, or systems entering unhandled states have caused fatalities worldwide
 @baier2008principles. Despite this, the majority of elevator controllers are validated
@@ -121,7 +121,7 @@ SPIN or TLA+, which automatically explore state spaces but are limited to finite
 small) models @baier2008principles. The B-Method @abrial1996elevator has been applied to
 specify elevator control in the Event-B formalism, but mechanical proof was not always carried
 through to completion. In contrast, Rocq proofs constitute unconditional mathematical
-guarantees — the kernel accepts a proof only if every step is type-correct — and the
+guarantees: the kernel accepts a proof only if every step is type-correct, and the
 resulting artifacts can be extracted to certified executable code.
 
 In this paper, we present a formal Rocq model of a simplified 5-floor elevator controller and
@@ -138,7 +138,7 @@ Properties 1–3 are safety properties with direct physical interpretations; Pro
 functional correctness properties about the specification itself; Property 6 establishes that
 the invariant is closed under execution from the designated initial configuration.
 
-An earlier formulation of Property 6 targeted a liveness claim — that the elevator
+An earlier formulation of Property 6 targeted a liveness claim that the elevator
 _eventually_ services any pending floor request. This stronger property was ultimately
 replaced by the reachability invariant above. Because our model is command-driven, the
 transition function `transition s cmd` only fires when the environment supplies a command;
@@ -146,8 +146,8 @@ the model imposes no constraint on _which_ commands arrive or in what order. A h
 non-cooperative environment could indefinitely supply `OpenDoor` commands after a floor
 request, or simply never issue `MoveElevator` or `ArriveAtDestination`, keeping the elevator
 permanently stationary. Under such a scheduler, "eventually reaches the destination" is
-unprovable without explicit _fairness assumptions_ — assertions that the environment will
-eventually deliver the right commands. Since our model does not include such assumptions,
+unprovable without explicit _fairness assumptions_ (assertions that the environment will
+eventually deliver the right commands). Since our model does not include such assumptions,
 the liveness claim falls outside what the transition function alone can guarantee. The
 reachability property is provable within the current model and directly serves the primary
 goal of safety verification: it guarantees that no matter what sequence of commands occurs,
@@ -260,7 +260,7 @@ Definition transition (s : State) (cmd : Command) : State :=
 ```
 
 The helper `floor_lt f g` is `Nat.ltb (floor_to_nat f) (floor_to_nat g)`. Unsafe commands
-_stutter_ — they return the state unchanged — enforcing the following safety constraints by
+_stutter_ (returning the state unchanged), enforcing the following safety constraints by
 construction: (a) calling a new floor while moving is ignored; (b) opening or closing the
 door while moving is ignored; (c) moving while the door is open is ignored; and (d) issuing
 `MoveElevator` when already at the requested floor leaves the elevator idle rather than
@@ -297,8 +297,8 @@ Definition state_invariant (s : State) : Prop :=
   direction_matches_movement s.
 ```
 
-The three conjuncts enforce: (1) both floors lie within the valid range $[0, 4]$ — this is
-trivially satisfied by the inductive `Floor` type but is included for explicitness; (2) the
+The three conjuncts enforce: (1) both floors lie within the valid range $[0, 4]$, trivially
+satisfied by the inductive `Floor` type but included for explicitness; (2) the
 elevator cannot be in motion unless the door is closed, directly encoding the core
 door-interlock safety requirement; and (3) the recorded direction of travel is consistent
 with the relative positions of the current and requested floors, ruling out states such as
@@ -306,7 +306,7 @@ with the relative positions of the current and requested floors, ruling out stat
 
 == Safety Properties
 
-*Property 1 — Door Safety.* If the transition function places the elevator in a moving state,
+*Property 1: Door Safety.* If the transition function places the elevator in a moving state,
 then the door in that state is closed:
 
 ```coq
@@ -326,7 +326,7 @@ Theorem transition_into_moving_requires_closed_door :
     door_status (transition s cmd) = DoorClosed.
 ```
 
-*Property 2 — Movement Safety.* If the elevator is already at the requested floor, the
+*Property 2: Movement Safety.* If the elevator is already at the requested floor, the
 `MoveElevator` command leaves it idle:
 
 ```coq
@@ -345,7 +345,7 @@ Theorem movement_safety : forall s,
   movement_status (transition s MoveElevator) <> Moving.
 ```
 
-*Property 3 — State Consistency.* The well-formedness invariant is preserved by every
+*Property 3: State Consistency.* The well-formedness invariant is preserved by every
 transition:
 
 ```coq
@@ -365,7 +365,7 @@ Theorem direction_consistency_after_transition : forall s cmd,
 
 == Functional Properties
 
-*Property 4 — Determinism.* We define an operational step relation so that determinism can
+*Property 4: Determinism.* We define an operational step relation so that determinism can
 be stated in the standard relational form:
 
 ```coq
@@ -383,7 +383,7 @@ Theorem unique_successor : forall s cmd,
   exists! s', Step s cmd s'.
 ```
 
-*Property 5 — Totality.* The step relation is defined for every state-command pair:
+*Property 5: Totality.* The step relation is defined for every state-command pair:
 
 ```coq
 Theorem totality : forall s cmd,
@@ -410,7 +410,7 @@ Inductive reachable : State -> Prop :=
     reachable s -> reachable (transition s cmd).
 ```
 
-*Property 6 — Reachability.* Every reachable state satisfies the full invariant, and
+*Property 6: Reachability.* Every reachable state satisfies the full invariant, and
 consequently both safety properties hold globally:
 
 ```coq
@@ -482,7 +482,7 @@ of the current state. If the elevator is already `Moving`, the `MoveElevator` tr
 stutters (returns `s`), and the `state_invariant` hypothesis on `s` provides
 `direction_matches_movement`. When `direction s = DirUp` or `DirDown`, the invariant conjunct
 yields a strict inequality between `current_floor` and `requested_floor`, but
-`current_floor s = requested_floor s` gives equality — `lia` derives a contradiction. The
+`current_floor s = requested_floor s` gives equality, so `lia` derives a contradiction. The
 `DirNone` case is excluded by the invariant since `Moving` with `DirNone` is `False`.
 
 If the elevator is `Idle` and the door is `DoorOpen`, the transition stutters. If the door
@@ -542,7 +542,7 @@ Establishing these properties formally ensures that the specification is fit for
 
 The `reachable_states_satisfy_invariant` proof proceeds by structural induction on the
 `reachable` derivation. The base case applies `initial_state_invariant`, which in turn
-invokes `invariant_idle` — the initial state `mkState F0 DoorClosed Idle DirNone F0` is
+invokes `invariant_idle`: the initial state `mkState F0 DoorClosed Idle DirNone F0` is
 trivially well-formed. The inductive step applies `transition_preserves_invariant` to the
 inductive hypothesis, showing that one more transition maintains the invariant.
 
@@ -572,8 +572,8 @@ The current model has several deliberate simplifications:
   and the model places no obligation on the environment to supply _useful_ commands. After
   a `CallElevator F4` request, for instance, a non-cooperative environment could repeatedly
   send `OpenDoor` and never send `MoveElevator` or `ArriveAtDestination`; the elevator
-  would remain at its current floor indefinitely. Proving liveness — "if a floor is
-  requested, the elevator eventually arrives there" — requires _fairness assumptions_
+  would remain at its current floor indefinitely. Proving liveness ("if a floor is
+  requested, the elevator eventually arrives there") requires _fairness assumptions_
   stating that certain commands are eventually delivered. Encoding such assumptions demands
   either an embedding in a temporal logic (e.g., Coq's TLA library) or a coinductive trace
   semantics, both of which substantially increase the complexity of the development. The
@@ -594,19 +594,19 @@ Safety and Movement Safety properties establish critical safeguards against haza
 behavior. State Consistency is captured as an inductive invariant proven to hold after every
 transition. Determinism and Totality follow from the functional design of the transition
 relation wrapped in an operational step predicate. Reachability is proven by structural
-induction on the derivation of reachable states, showing that the invariant — and therefore
-both safety properties — hold universally over all states that can arise from the initial
+induction on the derivation of reachable states, showing that the invariant, and therefore
+both safety properties, hold universally over all states that can arise from the initial
 configuration.
 
 The development demonstrates that interactive theorem proving in Rocq is accessible and
-effective for small-to-medium safety-critical controllers. The proofs are machine-checked —
-not merely argued informally — and together span approximately 660 lines of Rocq source.
+effective for small-to-medium safety-critical controllers. The proofs are machine-checked,
+not merely argued informally, and together span approximately 660 lines of Rocq source.
 
 Several directions for future work are apparent. First, extending the model to support a
 queue of floor requests would more faithfully reflect real elevator controllers and would
 expose interesting correctness properties around scheduling fairness. Second, adding a
-liveness proof — showing that a fair command sequence eventually services any pending
-request — would require embedding the model in a temporal logic framework such as
+liveness proof showing that a fair command sequence eventually services any pending
+request would require embedding the model in a temporal logic framework such as
 Coq's TLA library or using coinductive techniques. Third, applying model checking tools such
 as TLA+ or NuSMV to the same specification would allow a direct comparison of the two
 verification paradigms on the same benchmark. Fourth, Rocq's program extraction facility
