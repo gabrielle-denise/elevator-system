@@ -8,9 +8,7 @@ From Coq Require Import Arith.PeanoNat Lia.
   totality, and reachability invariants.
 *)
 
-(* ================================================================ *)
-(* Floors                                                           *)
-(* ================================================================ *)
+(* Floors *)
 
 (*
   We model a building with five valid floors: F0 through F4.
@@ -48,9 +46,7 @@ Proof.
   destruct f; unfold max_floor; simpl; repeat constructor.
 Qed.
 
-(* ================================================================ *)
-(* Elevator state components                                        *)
-(* ================================================================ *)
+(* Elevator state components *)
 
 Inductive DoorStatus : Type :=
 | DoorOpen
@@ -83,9 +79,7 @@ Record State : Type := mkState
   requested_floor : Floor
 }.
 
-(* ================================================================ *)
-(* Commands                                                         *)
-(* ================================================================ *)
+(* Commands *)
 
 (*
   Commands accepted by the controller.
@@ -112,9 +106,7 @@ Inductive Command : Type :=
 | MoveElevator : Command
 | ArriveAtDestination : Command.
 
-(* ================================================================ *)
-(* Transition function                                              *)
-(* ================================================================ *)
+(* Transition function *)
 
 (*
   The transition function is deterministic and total by construction:
@@ -212,9 +204,7 @@ Definition transition (s : State) (cmd : Command) : State :=
       end
   end.
 
-(* ================================================================ *)
-(* Invariants                                                       *)
-(* ================================================================ *)
+(* Invariants *)
 
 (*
   Floor bound invariant.
@@ -267,9 +257,7 @@ Definition state_invariant (s : State) : Prop :=
   movement_has_closed_door s /\
   direction_matches_movement s.
 
-(* ================================================================ *)
-(* Helper lemmas for constructing invariant states                  *)
-(* ================================================================ *)
+(* Helper lemmas for constructing invariant states *)
 
 Lemma floors_always_in_bounds :
   forall s : State,
@@ -322,9 +310,7 @@ Proof.
   repeat split; try apply floor_within_bounds; auto.
 Qed.
 
-(* ================================================================ *)
-(* State consistency preservation                                   *)
-(* ================================================================ *)
+(* State consistency preservation *)
 
 (*
   Main preservation theorem:
@@ -410,9 +396,7 @@ Proof.
   exact Hdir.
 Qed.
 
-(* ================================================================ *)
-(* Door safety                                                      *)
-(* ================================================================ *)
+(* Door safety *)
 
 Lemma invariant_moving_closed :
   forall s,
@@ -451,9 +435,7 @@ Proof.
   apply door_safety.
 Qed.
 
-(* ================================================================ *)
-(* Movement safety                                                  *)
-(* ================================================================ *)
+(* Movement safety *)
 
 (*
   If the elevator is already at the requested floor, then the MoveElevator
@@ -526,9 +508,7 @@ Proof.
   - exact Hmoving.
 Qed.
 
-(* ================================================================ *)
-(* Step relation, determinism, and totality                         *)
-(* ================================================================ *)
+(* Step relation, determinism, and totality *)
 
 (*
   Although transition is already a function, we define an operational
@@ -577,9 +557,7 @@ Proof.
     + exact Hy.
 Qed.
 
-(* ================================================================ *)
-(* Reachability                                                     *)
-(* ================================================================ *)
+(* Reachability *)
 
 (*
   Initial state:
